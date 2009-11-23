@@ -1,6 +1,6 @@
 grammar MongoQueryGrammar
 
-	rule query
+  rule query
      space and_expression space {
       def to_mongo
         and_expression.to_mongo
