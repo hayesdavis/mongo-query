@@ -197,38 +197,18 @@ module MongoQueryGrammar
       elements[1]
     end
 
-    def operator
-      elements[2]
-    end
-
     def space2
       elements[3]
     end
 
-    def value
+    def literal
       elements[4]
     end
   end
 
   module BinaryExpression1
-    def field_name
-      elements[0]
-    end
-
-    def space1
-      elements[1]
-    end
-
-    def operator
-      elements[2]
-    end
-
-    def space2
-      elements[3]
-    end
-
-    def value
-      elements[4]
+    def to_mongo
+      {field_name.to_mongo=>literal.to_mongo}
     end
   end
 
@@ -277,6 +257,50 @@ module MongoQueryGrammar
   end
 
   module BinaryExpression4
+    def field_name
+      elements[0]
+    end
+
+    def space1
+      elements[1]
+    end
+
+    def operator
+      elements[2]
+    end
+
+    def space2
+      elements[3]
+    end
+
+    def value
+      elements[4]
+    end
+  end
+
+  module BinaryExpression5
+    def field_name
+      elements[0]
+    end
+
+    def space1
+      elements[1]
+    end
+
+    def operator
+      elements[2]
+    end
+
+    def space2
+      elements[3]
+    end
+
+    def value
+      elements[4]
+    end
+  end
+
+  module BinaryExpression6
     def to_mongo
       {field_name.to_mongo=>{ operator.to_mongo => value.to_mongo }}
     end
@@ -298,7 +322,13 @@ module MongoQueryGrammar
       r3 = _nt_space
       s1 << r3
       if r3
-        r4 = _nt_comp_op
+        if has_terminal?('=', false, index)
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure('=')
+          r4 = nil
+        end
         s1 << r4
         if r4
           r5 = _nt_space
@@ -313,108 +343,146 @@ module MongoQueryGrammar
     if s1.last
       r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
       r1.extend(BinaryExpression0)
+      r1.extend(BinaryExpression1)
     else
       @index = i1
       r1 = nil
     end
     if r1
       r0 = r1
-      r0.extend(BinaryExpression4)
     else
-      i7, s7 = index, []
-      r8 = _nt_field_name
-      s7 << r8
-      if r8
-        r9 = _nt_space
-        s7 << r9
-        if r9
-          r10 = _nt_list_op
-          s7 << r10
-          if r10
-            r11 = _nt_space
-            s7 << r11
-            if r11
-              r12 = _nt_list
-              s7 << r12
+      i7 = index
+      i8, s8 = index, []
+      r9 = _nt_field_name
+      s8 << r9
+      if r9
+        r10 = _nt_space
+        s8 << r10
+        if r10
+          r11 = _nt_comp_op
+          s8 << r11
+          if r11
+            r12 = _nt_space
+            s8 << r12
+            if r12
+              r13 = _nt_literal
+              s8 << r13
             end
           end
         end
       end
-      if s7.last
-        r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
-        r7.extend(BinaryExpression1)
+      if s8.last
+        r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+        r8.extend(BinaryExpression2)
       else
-        @index = i7
-        r7 = nil
+        @index = i8
+        r8 = nil
       end
-      if r7
-        r0 = r7
-        r0.extend(BinaryExpression4)
+      if r8
+        r7 = r8
+        r7.extend(BinaryExpression6)
       else
-        i13, s13 = index, []
-        r14 = _nt_field_name
-        s13 << r14
-        if r14
-          r15 = _nt_space
-          s13 << r15
-          if r15
-            r16 = _nt_size_op
-            s13 << r16
-            if r16
-              r17 = _nt_space
-              s13 << r17
-              if r17
-                r18 = _nt_integer
-                s13 << r18
+        i14, s14 = index, []
+        r15 = _nt_field_name
+        s14 << r15
+        if r15
+          r16 = _nt_space
+          s14 << r16
+          if r16
+            r17 = _nt_list_op
+            s14 << r17
+            if r17
+              r18 = _nt_space
+              s14 << r18
+              if r18
+                r19 = _nt_list
+                s14 << r19
               end
             end
           end
         end
-        if s13.last
-          r13 = instantiate_node(SyntaxNode,input, i13...index, s13)
-          r13.extend(BinaryExpression2)
+        if s14.last
+          r14 = instantiate_node(SyntaxNode,input, i14...index, s14)
+          r14.extend(BinaryExpression3)
         else
-          @index = i13
-          r13 = nil
+          @index = i14
+          r14 = nil
         end
-        if r13
-          r0 = r13
-          r0.extend(BinaryExpression4)
+        if r14
+          r7 = r14
+          r7.extend(BinaryExpression6)
         else
-          i19, s19 = index, []
-          r20 = _nt_field_name
-          s19 << r20
-          if r20
-            r21 = _nt_space
-            s19 << r21
-            if r21
-              r22 = _nt_exists_op
-              s19 << r22
-              if r22
-                r23 = _nt_space
-                s19 << r23
-                if r23
-                  r24 = _nt_boolean
-                  s19 << r24
+          i20, s20 = index, []
+          r21 = _nt_field_name
+          s20 << r21
+          if r21
+            r22 = _nt_space
+            s20 << r22
+            if r22
+              r23 = _nt_size_op
+              s20 << r23
+              if r23
+                r24 = _nt_space
+                s20 << r24
+                if r24
+                  r25 = _nt_integer
+                  s20 << r25
                 end
               end
             end
           end
-          if s19.last
-            r19 = instantiate_node(SyntaxNode,input, i19...index, s19)
-            r19.extend(BinaryExpression3)
+          if s20.last
+            r20 = instantiate_node(SyntaxNode,input, i20...index, s20)
+            r20.extend(BinaryExpression4)
           else
-            @index = i19
-            r19 = nil
+            @index = i20
+            r20 = nil
           end
-          if r19
-            r0 = r19
-            r0.extend(BinaryExpression4)
+          if r20
+            r7 = r20
+            r7.extend(BinaryExpression6)
           else
-            @index = i0
-            r0 = nil
+            i26, s26 = index, []
+            r27 = _nt_field_name
+            s26 << r27
+            if r27
+              r28 = _nt_space
+              s26 << r28
+              if r28
+                r29 = _nt_exists_op
+                s26 << r29
+                if r29
+                  r30 = _nt_space
+                  s26 << r30
+                  if r30
+                    r31 = _nt_boolean
+                    s26 << r31
+                  end
+                end
+              end
+            end
+            if s26.last
+              r26 = instantiate_node(SyntaxNode,input, i26...index, s26)
+              r26.extend(BinaryExpression5)
+            else
+              @index = i26
+              r26 = nil
+            end
+            if r26
+              r7 = r26
+              r7.extend(BinaryExpression6)
+            else
+              @index = i7
+              r7 = nil
+            end
           end
         end
+      end
+      if r7
+        r0 = r7
+      else
+        @index = i0
+        r0 = nil
       end
     end
 
@@ -589,18 +657,14 @@ module MongoQueryGrammar
   end
 
   module CompOp2
-    def to_mongo; '$eq';  end
-  end
-
-  module CompOp3
     def to_mongo; '$gte'; end
   end
 
-  module CompOp4
+  module CompOp3
     def to_mongo; '$gt';  end
   end
 
-  module CompOp5
+  module CompOp4
     def to_mongo; '$ne';  end
   end
 
@@ -635,53 +699,41 @@ module MongoQueryGrammar
       if r2
         r0 = r2
       else
-        if has_terminal?('=', false, index)
-          r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
+        if has_terminal?('>=', false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
           r3.extend(CompOp2)
-          @index += 1
+          @index += 2
         else
-          terminal_parse_failure('=')
+          terminal_parse_failure('>=')
           r3 = nil
         end
         if r3
           r0 = r3
         else
-          if has_terminal?('>=', false, index)
-            r4 = instantiate_node(SyntaxNode,input, index...(index + 2))
+          if has_terminal?('>', false, index)
+            r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
             r4.extend(CompOp3)
-            @index += 2
+            @index += 1
           else
-            terminal_parse_failure('>=')
+            terminal_parse_failure('>')
             r4 = nil
           end
           if r4
             r0 = r4
           else
-            if has_terminal?('>', false, index)
-              r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            if has_terminal?('!=', false, index)
+              r5 = instantiate_node(SyntaxNode,input, index...(index + 2))
               r5.extend(CompOp4)
-              @index += 1
+              @index += 2
             else
-              terminal_parse_failure('>')
+              terminal_parse_failure('!=')
               r5 = nil
             end
             if r5
               r0 = r5
             else
-              if has_terminal?('!=', false, index)
-                r6 = instantiate_node(SyntaxNode,input, index...(index + 2))
-                r6.extend(CompOp5)
-                @index += 2
-              else
-                terminal_parse_failure('!=')
-                r6 = nil
-              end
-              if r6
-                r0 = r6
-              else
-                @index = i0
-                r0 = nil
-              end
+              @index = i0
+              r0 = nil
             end
           end
         end

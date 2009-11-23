@@ -29,6 +29,12 @@ grammar MongoQueryGrammar
   end
   
   rule binary_expression
+    field_name space '=' space literal {
+      def to_mongo
+        {field_name.to_mongo=>literal.to_mongo}
+      end
+    }
+    /
     (
       field_name space operator:comp_op    space value:literal
     / field_name space operator:list_op    space value:list
@@ -61,7 +67,6 @@ grammar MongoQueryGrammar
   rule comp_op
     '<='    { def to_mongo; '$lte'; end}
     / '<'   { def to_mongo; '$lt';  end} 
-    / '='   { def to_mongo; '$eq';  end}
     / '>='  { def to_mongo; '$gte'; end}
     / '>'   { def to_mongo; '$gt';  end}
     / '!='  { def to_mongo; '$ne';  end}

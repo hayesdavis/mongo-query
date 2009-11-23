@@ -1,0 +1,16 @@
+=mongo-query
+Compiles SQL-like where clauses into query hashes acceptable for querying Mongo 
+using the Mongo Ruby drivers and other wrappers (like MongoMapper).
+
+This is very, very young and may not be complete, stable or work at all. Caveat 
+emptor.
+
+==Examples
+  MongoQuery.compile("field_name = 1") 
+    #=>{"field_name"=>1}
+
+  MongoQuery.compile("id > 5 AND id < 10 AND name='hayes'")
+    #=>{"id"=>{"$gt"=>5,"$lt"=>10},"name"=>"hayes"}
+
+==Requires
+* treetop

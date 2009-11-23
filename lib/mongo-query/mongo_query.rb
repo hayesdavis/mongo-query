@@ -1,6 +1,3 @@
-require 'treetop'
-require 'mongo_query_grammar'
-
 class MongoQuery
   
   class << self
