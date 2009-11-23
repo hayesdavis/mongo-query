@@ -1,0 +1,163 @@
+grammar MongoQueryGrammar
+
+	rule query
+     space and_expression space {
+      def to_mongo
+        and_expression.to_mongo
+      end
+     }
+  end
+  
+  rule and_expression
+    binary_expression space and_op space and_expression {
+      def to_mongo
+        res = binary_expression.to_mongo
+        new_res = and_expression.to_mongo
+        res.each do |key,value|
+          if new_res.has_key?(key)
+            value.merge!(new_res.delete(key))
+          end
+        end
+        res.merge(new_res)
+      end
+    }
+    / binary_expression
+  end
+  
+  rule and_op
+    'and' / 'AND'
+  end
+  
+  rule binary_expression
+    (
+      field_name space operator:comp_op    space value:literal
+    / field_name space operator:list_op    space value:list
+    / field_name space operator:size_op    space value:integer
+    / field_name space operator:exists_op  space value:boolean
+    ) {
+      def to_mongo
+        {field_name.to_mongo=>{ operator.to_mongo => value.to_mongo }}
+      end
+    }
+  end
+  
+  rule list
+    '(' space list_items space ')' {
+      def to_mongo
+        list_items.to_mongo
+      end
+    }
+  end
+  
+  rule list_items
+    literal space ',' space list_items {
+      def to_mongo
+        [literal.to_mongo] + [list_items.to_mongo].flatten
+      end
+    } 
+    / literal
+  end
+  
+  rule comp_op
+    '<='    { def to_mongo; '$lte'; end}
+    / '<'   { def to_mongo; '$lt';  end} 
+    / '='   { def to_mongo; '$eq';  end}
+    / '>='  { def to_mongo; '$gte'; end}
+    / '>'   { def to_mongo; '$gt';  end}
+    / '!='  { def to_mongo; '$ne';  end}
+  end
+  
+  rule list_op
+    in_op / not_in_op / all_op
+  end
+  
+  rule in_op
+    'in' / 'IN' {def to_mongo; "$in"; end }
+  end
+  
+  rule not_in_op
+    'not in' / 'NOT IN' {def to_mongo; "$nin"; end }
+  end
+  
+  rule all_op
+    'all' / 'ALL' {def to_mongo; "$all"; end }
+  end
+  
+  rule size_op
+    'size' / 'SIZE' {def to_mongo; "$size"; end }
+  end
+  
+  rule exists_op
+    'exists' / 'EXISTS' {def to_mongo; "$exists"; end }
+  end
+  
+  rule literal
+    string / number / boolean / regex 
+  end
+  
+  rule number
+    float / integer
+  end
+  
+  rule float
+    [-+]? [0-9]+ '.' [0-9]+ {
+      def to_mongo
+        text_value.to_f
+      end
+    }
+  end
+  
+  rule integer
+    [-+]? [0-9]+ {
+      def to_mongo
+        text_value.to_i
+      end
+    }
+  end
+  
+  rule string
+    (double_quote_string / single_quote_string) {
+      def to_mongo
+        text_value[1...-1]
+      end
+    }
+  end
+  
+  rule double_quote_string
+    '"' ('\"' / '\\' / [^"])* '"'
+  end
+  
+  rule single_quote_string
+    "'" ("\\'" / '\\' / [^'])* "'"
+  end
+  
+  rule boolean
+      'true'  { def to_mongo; true;  end } 
+    / 'false' { def to_mongo; false; end }
+  end
+  
+  rule space
+    [ \n\t]*
+  end
+  
+  rule regex
+    '/' [^/]+ '/' {
+      def to_mongo
+        Regexp.new(text_value[1...-1])
+      end
+    }
+  end
+  
+  rule field_name
+    (single_field_name '.' field_name / single_field_name) {
+      def to_mongo
+        text_value
+      end
+    }
+  end
+  
+  rule single_field_name
+    [a-zA-z0-9_-]+
+  end
+  
+end
